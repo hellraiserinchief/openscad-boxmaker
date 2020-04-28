@@ -4,6 +4,9 @@
  * Includes code from https://www.thingiverse.com/thing:448592/
  * http://boxdesigner.connectionlab.org/
  */
+ 
+function multiply(A,B) = [  for( i = [0 : len(A) - 1] ) A[i]*B[i] ];
+    
 module box_2d(box_inner, thickness, tabs, margin=2) {
   layout_2d(box_inner, thickness) {
     side_a_top(box_inner, thickness, tabs);
@@ -120,37 +123,50 @@ module layout_3d(box_inner, thickness) {
   }
 }
 
-module side_a_top(inner, thickness, tabs) {
+module side_a_top(inner, thickness, tabs, cut = [1,1,1,1]) {
   side([inner[0], inner[1]],
        thickness,
        [tabs[3], tabs[4], tabs[3], tabs[4]],
-       [0, 0, 0, 0]);
+       [0, 0, 0, 0],
+       cut
+    );
 }
 
-module side_a(inner, thickness, tabs) {
+module side_a(inner, thickness, tabs, cut = [1,1,1,1]) {
   side([inner[0], inner[1]],
        thickness,
        [tabs[0], tabs[1], tabs[0], tabs[1]],
-       [0, 0, 0, 0]);
+       [0, 0, 0, 0],
+       cut
+    );
 }
 
 // left/right
-module side_b(inner, thickness, tabs) {
+module side_b(inner, thickness, tabs, cut = [1,1,1,1]) {
   side([inner[1], inner[2]],
        thickness,
        [tabs[4], tabs[2], tabs[1], tabs[2]],
-       [1, 0, 1, 0]);
+       [1, 0, 1, 0], 
+       cut
+    );
 }
 
 // front/back
-module side_c(inner, thickness, tabs) {
+module side_c(inner, thickness, tabs, cut = [1,1,1,1]) {
   side([inner[0], inner[2]],
        thickness,
-       [tabs[3], tabs[2], tabs[0], tabs[2]],
-       [1, 1, 1, 1]);
+       [tabs[3], tabs[2], tabs[0], tabs[2]]  * cut,
+       [1, 1, 1, 1], 
+       cut
+    );
 }
 
-module side(inner, thickness, tabs, polarity) {
+module side(inner, thickness, tabs, polarity, cut)
+{
+    _side(inner, thickness, multiply(tabs,cut), polarity);
+}
+
+module _side(inner, thickness, tabs, polarity) {
   SMIDGE = 0.1;
   x = inner[0] + thickness * 2;
   y = inner[1] + thickness * 2;
@@ -201,21 +217,27 @@ module edge_cuts(length, finger_width, cut_depth, polarity) {
 // licensed under the Creative Commons - Attribution license.
 
 //cuts that fall at the end of an edge requiring an extra long cut
+//edge is always longer than finger_width
 module outside_cuts(length, finger_width, cut_depth) {
   //Calculate the maximum number of fingers and cuts possible
   maxDiv = floor(length / finger_width);
+  //echo(maxDiv);
 
   //the usable divisions value must be odd for this layout
   uDiv = (maxDiv % 2) == 0 ? maxDiv - 3 : maxDiv - 2;
+    //echo(uDiv);
 
   numFinger = ceil(uDiv / 2);
+    //echo(numFinger);
   numCuts = floor(uDiv / 2);
+    //echo(numCuts);
   //calculate the length of the extra long cut
   endCut = (length - uDiv * finger_width)/2;
+    //echo(endCut);
   //amount of padding to add to the iterative placement of cuts
   // this is the extra long cut at the beginning and end of the edge
   padding=endCut + finger_width;
-
+    //echo(padding);
   square([endCut, cut_depth]);
 
   for (i=[0:numCuts]) {
@@ -232,3 +254,6 @@ module outside_cuts(length, finger_width, cut_depth) {
 module empty() {
   // Used if you don't want a given side.
 }
+
+//outside_cuts(90,10,5);
+//edge_cuts(90,10,5,1);
