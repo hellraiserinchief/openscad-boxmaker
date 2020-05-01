@@ -155,7 +155,7 @@ module side_b(inner, thickness, tabs, cut = [1,1,1,1]) {
 module side_c(inner, thickness, tabs, cut = [1,1,1,1]) {
   side([inner[0], inner[2]],
        thickness,
-       [tabs[3], tabs[2], tabs[0], tabs[2]]  * cut,
+       [tabs[3], tabs[2], tabs[0], tabs[2]],
        [1, 1, 1, 1], 
        cut
     );
